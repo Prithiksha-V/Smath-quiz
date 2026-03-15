@@ -66,13 +66,15 @@ export default function CreateQuiz() {
 
     const updateQuestion = (index, field, value) => {
         const newQs = [...questions];
-        newQs[index][field] = value;
+        newQs[index] = { ...newQs[index], [field]: value };
         setQuestions(newQs);
     };
 
     const updateOption = (qIndex, oIndex, value) => {
         const newQs = [...questions];
-        newQs[qIndex].options[oIndex] = value;
+        const newOptions = [...newQs[qIndex].options];
+        newOptions[oIndex] = value;
+        newQs[qIndex] = { ...newQs[qIndex], options: newOptions };
         setQuestions(newQs);
     };
 

@@ -27,18 +27,18 @@ function getEmojiAndMessage(rank, totalParticipants) {
 // Join quiz
 router.post('/join', async (req, res) => {
     try {
-        const { name, quizCode } = req.body;
+        const { name, email, quizCode } = req.body;
 
-        if (!name || !quizCode) {
-            return res.status(400).json({ message: 'Name and quiz code are required' });
+        if (!name || !email || !quizCode) {
+            return res.status(400).json({ message: 'Name, email, and quiz code are required' });
         }
 
         const quiz = await Quiz.findOne({ quizCode });
         if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
         if (!quiz.isActive) return res.status(400).json({ message: 'This quiz is no longer active' });
 
-        // Check if participant already joined
-        const existing = await Participant.findOne({ name: name.trim(), quizId: quiz._id });
+        // Check if participant already joined using email
+        const existing = await Participant.findOne({ email: email.trim().toLowerCase(), quizId: quiz._id });
         if (existing) {
             if (existing.completed) {
                 return res.status(400).json({ message: 'You have already completed this quiz' });
@@ -52,6 +52,7 @@ router.post('/join', async (req, res) => {
 
         const participant = new Participant({
             name: name.trim(),
+            email: email.trim().toLowerCase(),
             quizId: quiz._id,
             totalQuestions: quiz.questions.length
         });

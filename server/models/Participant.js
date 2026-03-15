@@ -7,6 +7,12 @@ const participantSchema = new mongoose.Schema({
         trim: true,
         maxlength: 50
     },
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        trim: true,
+        lowercase: true
+    },
     quizId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Quiz',

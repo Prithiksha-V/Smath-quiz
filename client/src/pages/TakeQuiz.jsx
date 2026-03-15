@@ -76,15 +76,22 @@ export default function TakeQuiz() {
         setAnswers(newAnswers);
     };
 
-    const handleNextOrSubmit = async () => {
-        clearInterval(timerRef.current); // Stop timer briefly
+    const handleJumpToQuestion = (index) => {
+        clearInterval(timerRef.current);
+        setCurrentIndex(index);
+        setTimeLeft(quizInfo.timePerQuestion);
+    };
 
+    const handlePrevious = () => {
+        if (currentIndex > 0) {
+            handleJumpToQuestion(currentIndex - 1);
+        }
+    };
+
+    const handleNextOrSubmit = async () => {
         if (currentIndex < quizInfo.questionCount - 1) {
-            // Next Question
-            setCurrentIndex(prev => prev + 1);
-            setTimeLeft(quizInfo.timePerQuestion); // Reset timer for next question
+            handleJumpToQuestion(currentIndex + 1);
         } else {
-            // Submit Quiz
             await submitQuiz();
         }
     };
@@ -129,91 +136,161 @@ export default function TakeQuiz() {
         timeLeft <= 20 ? 'var(--accent-orange)' : 'var(--accent-cyan)';
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '2rem' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>{quizInfo.title}</h2>
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem',
-                    borderRadius: 'var(--radius-md)', border: `1px solid ${timerColor}`,
-                    color: timerColor, fontWeight: '700', fontSize: '1.2rem',
-                    transition: 'all var(--transition-normal)'
-                }}>
-                    <HiOutlineClock />
-                    {formatTime(timeLeft)}
-                </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div style={{ height: '6px', background: 'var(--bg-card)', borderRadius: '3px', marginBottom: '3rem', overflow: 'hidden' }}>
-                <div style={{
-                    height: '100%', width: `${progress}%`, background: 'var(--gradient-primary)',
-                    transition: 'width 0.3s ease'
-                }}></div>
-            </div>
-
-            {/* Question Card */}
-            <div className="glass-card animate-slide-up" style={{ padding: '3rem 2rem' }}>
-                <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                    <span style={{
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        width: '40px', height: '40px', borderRadius: '50%',
-                        background: 'var(--bg-secondary)', color: 'var(--accent-purple)',
-                        fontWeight: 'bold', fontSize: '1.2rem', flexShrink: 0
+        <div style={{ maxWidth: '1000px', margin: '0 auto', paddingTop: '2rem', display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+            {/* Main Quiz Area */}
+            <div style={{ flex: 1 }}>
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h2 style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>{quizInfo.title}</h2>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem',
+                        borderRadius: 'var(--radius-md)', border: `1px solid ${timerColor}`,
+                        color: timerColor, fontWeight: '700', fontSize: '1.2rem',
+                        transition: 'all var(--transition-normal)'
                     }}>
-                        {currentIndex + 1}
-                    </span>
-                    <h1 style={{ fontSize: '1.6rem', lineHeight: '1.4', margin: 0 }}>
-                        {currentQ.questionText}
-                    </h1>
+                        <HiOutlineClock />
+                        {formatTime(timeLeft)}
+                    </div>
                 </div>
 
-                {/* Options */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {currentQ.options.map((opt, idx) => {
-                        const isSelected = answers[currentIndex] === idx;
+                {/* Progress Bar */}
+                <div style={{ height: '6px', background: 'var(--bg-card)', borderRadius: '3px', marginBottom: '3rem', overflow: 'hidden' }}>
+                    <div style={{
+                        height: '100%', width: `${progress}%`, background: 'var(--gradient-primary)',
+                        transition: 'width 0.3s ease'
+                    }}></div>
+                </div>
+
+                {/* Question Card */}
+                <div className="glass-card animate-slide-up" style={{ padding: '3rem 2rem' }}>
+                    <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                        <span style={{
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                            width: '40px', height: '40px', borderRadius: '50%',
+                            background: 'var(--bg-secondary)', color: 'var(--accent-purple)',
+                            fontWeight: 'bold', fontSize: '1.2rem', flexShrink: 0
+                        }}>
+                            {currentIndex + 1}
+                        </span>
+                        <h1 style={{ fontSize: '1.6rem', lineHeight: '1.4', margin: 0 }}>
+                            {currentQ.questionText}
+                        </h1>
+                    </div>
+
+                    {/* Options */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {currentQ.options.map((opt, idx) => {
+                            const isSelected = answers[currentIndex] === idx;
+                            return (
+                                <button
+                                    key={idx}
+                                    onClick={() => selectOption(idx)}
+                                    style={{
+                                        textAlign: 'left', padding: '1.2rem 1.5rem',
+                                        background: isSelected ? 'rgba(139, 92, 246, 0.15)' : 'var(--bg-secondary)',
+                                        border: `2px solid ${isSelected ? 'var(--accent-purple)' : 'var(--border-glass)'}`,
+                                        borderRadius: 'var(--radius-md)', color: 'var(--text-primary)',
+                                        fontSize: '1.1rem', cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        transform: isSelected ? 'scale(1.02)' : 'none'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                        <span style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            width: '24px', height: '24px', borderRadius: '50%',
+                                            border: `2px solid ${isSelected ? 'var(--accent-purple)' : 'var(--text-muted)'}`,
+                                            color: isSelected ? 'var(--accent-purple)' : 'var(--text-muted)',
+                                            fontSize: '0.9rem', fontWeight: 'bold'
+                                        }}>
+                                            {['A', 'B', 'C', 'D'][idx]}
+                                        </span>
+                                        <span>{opt}</span>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <button
+                        className="btn btn-secondary btn-lg"
+                        onClick={handlePrevious}
+                        disabled={currentIndex === 0 || submitting}
+                    >
+                        ← Previous
+                    </button>
+                    <button
+                        className="btn btn-primary btn-lg"
+                        onClick={handleNextOrSubmit}
+                        disabled={submitting || answers[currentIndex] === null}
+                    >
+                        {submitting ? 'Submitting...' : currentIndex < quizInfo.questionCount - 1 ? 'Next Question →' : 'Submit Quiz ✨'}
+                    </button>
+                </div>
+            </div> {/* End Main Area */}
+
+            {/* Question Palette Sidebar */}
+            <div className="glass-card animate-slide-up" style={{ width: '300px', padding: '1.5rem', flexShrink: 0, position: 'sticky', top: '2rem' }}>
+                <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.5rem' }}>Question Palette</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+                    {Array.from({ length: quizInfo.questionCount }).map((_, i) => {
+                        const isAnswered = answers[i] !== null;
+                        const isCurrent = currentIndex === i;
+                        let bgColor = 'var(--bg-secondary)';
+                        let textColor = 'var(--text-primary)';
+                        let border = '1px solid var(--border-glass)';
+
+                        if (isCurrent) {
+                            border = '2px solid var(--accent-purple)';
+                        } else if (isAnswered) {
+                            bgColor = 'var(--accent-purple)';
+                            textColor = 'white';
+                        }
+
                         return (
                             <button
-                                key={idx}
-                                onClick={() => selectOption(idx)}
+                                key={i}
+                                onClick={() => handleJumpToQuestion(i)}
+                                disabled={submitting}
                                 style={{
-                                    textAlign: 'left', padding: '1.2rem 1.5rem',
-                                    background: isSelected ? 'rgba(139, 92, 246, 0.15)' : 'var(--bg-secondary)',
-                                    border: `2px solid ${isSelected ? 'var(--accent-purple)' : 'var(--border-glass)'}`,
-                                    borderRadius: 'var(--radius-md)', color: 'var(--text-primary)',
-                                    fontSize: '1.1rem', cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    transform: isSelected ? 'scale(1.02)' : 'none'
+                                    width: '100%',
+                                    aspectRatio: '1',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: bgColor,
+                                    color: textColor,
+                                    border: border,
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
                                 }}
                             >
-                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                    <span style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        width: '24px', height: '24px', borderRadius: '50%',
-                                        border: `2px solid ${isSelected ? 'var(--accent-purple)' : 'var(--text-muted)'}`,
-                                        color: isSelected ? 'var(--accent-purple)' : 'var(--text-muted)',
-                                        fontSize: '0.9rem', fontWeight: 'bold'
-                                    }}>
-                                        {['A', 'B', 'C', 'D'][idx]}
-                                    </span>
-                                    <span>{opt}</span>
-                                </div>
+                                {i + 1}
                             </button>
                         );
                     })}
                 </div>
+                <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ width: '15px', height: '15px', background: 'var(--accent-purple)', borderRadius: '3px' }}></div>
+                        <span>Answered</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ width: '15px', height: '15px', background: 'var(--bg-secondary)', border: '2px solid var(--accent-purple)', borderRadius: '3px' }}></div>
+                        <span>Current</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ width: '15px', height: '15px', background: 'var(--bg-secondary)', border: '1px solid var(--border-glass)', borderRadius: '3px' }}></div>
+                        <span>Unanswered</span>
+                    </div>
+                </div>
             </div>
 
-            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                    className="btn btn-primary btn-lg"
-                    onClick={handleNextOrSubmit}
-                    disabled={submitting || answers[currentIndex] === null}
-                >
-                    {submitting ? 'Submitting...' : currentIndex < quizInfo.questionCount - 1 ? 'Next Question →' : 'Submit Quiz ✨'}
-                </button>
-            </div>
         </div>
     );
 }

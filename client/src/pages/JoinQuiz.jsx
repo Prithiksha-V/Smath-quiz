@@ -7,6 +7,7 @@ export default function JoinQuiz() {
     const { code } = useParams();
     const navigate = useNavigate();
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
     const [error, setError] = useState('');
@@ -29,6 +30,7 @@ export default function JoinQuiz() {
     const handleJoin = async (e) => {
         e.preventDefault();
         if (!name.trim()) return setError('Please enter your name');
+        if (!email.trim()) return setError('Please enter your email address');
 
         setJoining(true);
         setError('');
@@ -36,7 +38,7 @@ export default function JoinQuiz() {
         try {
             const data = await apiFetch('/participant/join', {
                 method: 'POST',
-                body: JSON.stringify({ name, quizCode: code })
+                body: JSON.stringify({ name, email, quizCode: code })
             });
 
             // Store participant info
@@ -91,7 +93,7 @@ export default function JoinQuiz() {
                         </div>
 
                         <form onSubmit={handleJoin}>
-                            <div className="form-group" style={{ marginBottom: '2rem' }}>
+                            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                                 <label>Your Name</label>
                                 <div style={{ position: 'relative' }}>
                                     <span style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
@@ -101,11 +103,29 @@ export default function JoinQuiz() {
                                         type="text"
                                         className="form-input"
                                         style={{ width: '100%', paddingLeft: '3rem', fontSize: '1.1rem' }}
-                                        placeholder="Enter your name to start..."
+                                        placeholder="Enter your name..."
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         required
                                         autoFocus
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: '2rem' }}>
+                                <label>Email Address</label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                                        <HiOutlineUser size={20} />
+                                    </span>
+                                    <input
+                                        type="email"
+                                        className="form-input"
+                                        style={{ width: '100%', paddingLeft: '3rem', fontSize: '1.1rem' }}
+                                        placeholder="Enter your email to start..."
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
                                     />
                                 </div>
                             </div>
